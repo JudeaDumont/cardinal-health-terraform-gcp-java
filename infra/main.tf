@@ -15,7 +15,7 @@ resource "google_storage_bucket_object" "static_site_src" {
   bucket = google_storage_bucket.website.name
 }
 
-resource "google_cloud_run_service" "service" {
+resource "google_cloud_run_service" "simple_service" {
   name     = "springboot-service"
   location = "us-east1"
 
@@ -34,8 +34,8 @@ resource "google_cloud_run_service" "service" {
 }
 
 resource "google_cloud_run_service_iam_binding" "binding" {
-  location = "us-central1"
-  service  = google_cloud_run_service.service.name
+  location = "us-east1"
+  service  = google_cloud_run_service.simple_service.name
   role     = "roles/run.invoker"
 
   members = [
@@ -44,5 +44,5 @@ resource "google_cloud_run_service_iam_binding" "binding" {
 }
 
 output "cloud_run_url" {
-  value = google_cloud_run_service.service.status[0].url
+  value = google_cloud_run_service.simple_service.status[0].url
 }
