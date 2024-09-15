@@ -38,6 +38,5 @@ build/
 .DS_Store
 /infra/terraform.tfstate
 /infra/terraform.tfstate.backup
-/infra/.terraform.lock.hcl
 /infra/keys/sa.json
 /infra/.terraform/
