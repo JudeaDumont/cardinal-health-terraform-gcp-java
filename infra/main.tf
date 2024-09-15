@@ -1,48 +1,28 @@
-resource "google_storage_bucket" "website" {
-  name = "static-website-by-jgd"
-  location = "US"
-}
 
-resource "google_storage_bucket_access_control" "public_rule" {
-  bucket = google_storage_bucket.website.name
-  role = "READER"
-  entity = "allUsers"
-}
-
-resource "google_storage_bucket_object" "static_site_src" {
-  name = "index.html"
-  source = "../website/index.html"
-  bucket = google_storage_bucket.website.name
-}
-
-resource "google_cloud_run_service" "simple_service" {
-  name     = "springboot-service"
+resource "google_container_cluster" "primary" {
+  name     = "my-gke-cluster"
   location = "us-east1"
+  deletion_protection = false
 
-  template {
-    spec {
-      containers {
-        image = "gcr.io/${var.gcp_project}/calculation-service:latest"
-      }
-    }
+  node_config {
+    machine_type = "e2-micro"
+    disk_size_gb = 30
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform",
+    ]
   }
 
-  traffic {
-    percent         = 100
-    latest_revision = true
+  initial_node_count = 1
+}
+
+resource "google_container_node_pool" "primary_nodes" {
+  cluster    = google_container_cluster.primary.name
+  location   = google_container_cluster.primary.location
+  name       = "my-node-pool"
+  node_count = 3
+
+  node_config {
+    disk_size_gb = 30
+    machine_type = "e2-micro"
   }
-}
-
-resource "google_cloud_run_service_iam_binding" "binding" {
-  location = "us-east1"
-  service  = google_cloud_run_service.simple_service.name
-  role     = "roles/run.invoker"
-
-  members = [
-    "allUsers"
-  ]
-}
-
-output "cloud_run_url" {
-  value = google_cloud_run_service.simple_service.status[0].url
 }
